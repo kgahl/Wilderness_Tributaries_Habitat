@@ -6,7 +6,6 @@
 library(readr)
 
 #Import Data
-
 WestClear_Telemetry_Habitat_March <- read_csv("data/raw/WestClear_Telemetry_Habitat_March.csv", 
                                               col_types = cols(ObjectID = col_number(), 
                                                                `Site Type` = col_character(), `Tag Number` = col_number(), 
@@ -21,4 +20,5 @@ WestClear_Telemetry_Habitat_March <- read_csv("data/raw/WestClear_Telemetry_Habi
                                                                `Date and Time` = col_date(format = "%m/%d/%Y"), 
                                                                `Temperature (C)` = col_number()))
 View(WestClear_Telemetry_Habitat_March)
+
 
