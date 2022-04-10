@@ -4,6 +4,8 @@
 
 #Packages Used
 library(readr)
+library(tidyverse)
+library(dplyr)
 
 #Import Data
 WestClear_Telemetry_Habitat_March <- read_csv("data/raw/WestClear_Telemetry_Habitat_March.csv", 
