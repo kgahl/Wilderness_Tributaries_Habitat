@@ -21,3 +21,4 @@ WestClear_Telemetry_Habitat_March <- read_csv("data/raw/WestClear_Telemetry_Habi
                                                                `Date and Time` = col_date(format = "%m/%d/%Y"), 
                                                                `Temperature (C)` = col_number()))
 View(WestClear_Telemetry_Habitat_March)
+
