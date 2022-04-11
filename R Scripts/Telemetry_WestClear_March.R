@@ -21,6 +21,6 @@ WestClear_Telemetry_Habitat_March <- read_csv("data/raw/WestClear_Telemetry_Habi
                                                                `Instream Cover Percentage (3)` = col_number(), 
                                                                `Date and Time` = col_date(format = "%m/%d/%Y"), 
                                                                `Temperature (C)` = col_number()))
-View(WestClear_Telemetry_Habitat_March)
+View(WestClear_Telemetry_Habitat_March) #Opens window to view table 
 
 
