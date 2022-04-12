@@ -8,7 +8,7 @@ library(tidyverse)
 library(dplyr)
 library(tidyr)
 
-##Import Habitat Data
+## Import Habitat Data
 Habitat_Data <- read_csv("data/raw/WestClear_Telemetry_Habitat_March.csv", 
                          na =c("","na"),
                          col_types = cols(ObjectID = col_number(), 
@@ -24,12 +24,55 @@ Habitat_Data <- read_csv("data/raw/WestClear_Telemetry_Habitat_March.csv",
 
 ## Remove % sign from Instream Cover Percentage columns 
 gsub( "%", "", as.character(Habitat_Data))
-#view(Habitat_Data)
+view(Habitat_Data)
+
+#Make Separate Data for Type 1 and Type 2 columns
+Fish_Cover1 <- Habitat_Data %>%
+  filter(!is.na(`Tag Number`)) %>%
+  select(c(`Tag Number`, 'Instream Cover Type (1)', `Instream Cover Percentage (1)`)) %>%
+  rename(Cover_Type = 'Instream Cover Type (1)') %>%
+  rename(Cover_Percentage = 'Instream Cover Percentage (1)')
+#Temporarily use -999 as no measurements 
+Fish_Cover1 <- Fish_Cover1 %>%
+  mutate(Cover_Percentage = if_else(is.na(Cover_Type), -999, Cover_Percentage)) %>%
+  mutate(Cover_Type = if_else(is.na(Cover_Type), "Missing", Cover_Type))
+
+Fish_Cover2 <- Habitat_Data %>%
+  filter(!is.na(`Tag Number`)) %>%
+  select(c(`Tag Number`, 'Instream Cover Type (2)', `Instream Cover Percentage (2)`)) %>%
+  rename(Cover_Type = 'Instream Cover Type (2)') %>%
+  rename(Cover_Percentage = 'Instream Cover Percentage (2)') %>%
+  filter(!is.na(Cover_Type))
+
+Fish_Cover3 <- Habitat_Data %>%
+  filter(!is.na(`Tag Number`)) %>%
+  select(c(`Tag Number`, 'Instream Cover Type (3)', `Instream Cover Percentage (3)`)) %>%
+  rename(Cover_Type = 'Instream Cover Type (3)') %>%
+  rename(Cover_Percentage = 'Instream Cover Percentage (3)') %>%
+  filter(!is.na(Cover_Type))
+
+#Combine all Data Frames
+Cover_Long <- Fish_Cover1 %>%
+  bind_rows(Fish_Cover2, Fish_Cover3) %>%
+  arrange(`Tag Number`)
+
+#Transform to wide format
+Cover_Wide <- Cover_Long %>%
+  pivot_wider(id_cols = `Tag Number`, 
+              names_from = Cover_Type,
+              values_from = Cover_Percentage)
+
+
+
+
+
+
+
 
 ## Unite Instream Cover and Percent for (1)(2)(3)
-unite(Habitat_Data, col = "Instream Cover 1", c("Instream Cover Type (1)", "Instream Cover Percentage (1)"), sep = "-")
-unite(Habitat_Data, col = "Instream Cover 2", c("Instream Cover Type (2)", "Instream Cover Percentage (2)"), sep = "-")
-unite(Habitat_Data, col = "Instream Cover 3", c("Instream Cover Type (3)", "Instream Cover Percentage (3)"), sep = "-")
+#assign name <- unite(Habitat_Data, col = "Instream Cover 1", c("Instream Cover Type (1)", "Instream Cover Percentage (1)"), sep = "-")
+#unite(Habitat_Data, col = "Instream Cover 2", c("Instream Cover Type (2)", "Instream Cover Percentage (2)"), sep = "-")
+#unite(Habitat_Data, col = "Instream Cover 3", c("Instream Cover Type (3)", "Instream Cover Percentage (3)"), sep = "-")
 
 ####unite(Habitat_Data, col = "Instream_Cover_1", (Instream Cover Type (1)|Instream Cover Percentage (1)), sep = "-")
 ####print(Habitat_Data[,Instream_Cover_1,drop=FALSE])
@@ -58,7 +101,6 @@ head(Habitat_Data)
 #                                        `Capture Date` = col_date(format = "%m/%d/%Y"), 
 #                                        Release = col_skip(), Notes = col_skip()))
 # View(Fish_Data)
-# 
 # tibble::as_tibble(Habitat_Data)
 # 
 # 
