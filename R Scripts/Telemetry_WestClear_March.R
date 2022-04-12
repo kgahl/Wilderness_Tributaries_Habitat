@@ -20,19 +20,22 @@ Habitat_Data <- read_csv("data/raw/WestClear_Telemetry_Habitat_March.csv",
                                           `Instream Cover Percentage (3)` = col_number(), 
                                           `Date and Time` = col_date(format = "%m/%d/%Y"), 
                                           `Temperature (C)` = col_number()))
-View(Habitat_Data)
+#View(Habitat_Data)
 
 ## Remove % sign from Instream Cover Percentage columns 
 gsub( "%", "", as.character(Habitat_Data))
-view(Habitat_Data)
+#view(Habitat_Data)
 
 ## Unite Instream Cover and Percent for (1)(2)(3)
-unite(Habitat_Data, col = "Instream_Cover_1", (Instream Cover Type (1)|Instream Cover Percentage (1)), sep = "-")
-print(Habitat_Data[,Instream_Cover_1,drop=FALSE])
-View(Habitat_Data)
+unite(Habitat_Data, col = "Instream Cover 1", c("Instream Cover Type (1)", "Instream Cover Percentage (1)"), sep = "-")
 unite(Habitat_Data, col = "Instream Cover 2", c("Instream Cover Type (2)", "Instream Cover Percentage (2)"), sep = "-")
 unite(Habitat_Data, col = "Instream Cover 3", c("Instream Cover Type (3)", "Instream Cover Percentage (3)"), sep = "-")
+
+####unite(Habitat_Data, col = "Instream_Cover_1", (Instream Cover Type (1)|Instream Cover Percentage (1)), sep = "-")
+####print(Habitat_Data[,Instream_Cover_1,drop=FALSE])
+
 view(Habitat_Data)
+head(Habitat_Data)
   
 ## Gather Instream Cover 1, 2, 3 to create a 1,2,3 and type/percent column
 # gather(Habitat_Data, "1, 2, 3", "Type Percent", column numbers to gather from- likely 10:12)
@@ -43,7 +46,7 @@ view(Habitat_Data)
 ## Separate Type Percent column into type and percent 
 # separate(Habitat_Data, col=Type Percent, into=c('Type', 'Percent'), sep='-')
 
-## Spread
+## Spread Type and Percent so Type observations become variables (columns) 
 # spread(Habitat_Data, key=Type, value=Percent)
 
 
