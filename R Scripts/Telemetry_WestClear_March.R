@@ -8,7 +8,10 @@ library(tidyverse)
 library(dplyr)
 library(tidyr)
 
-## Import Habitat Data
+######################################################################################################################
+###DATA WRANGLING 
+
+## Import raw Habitat Data
 Habitat_Data <- read_csv("data/raw/WestClear_Telemetry_Habitat_March.csv", 
                          na =c("","na"),
                          col_types = cols(ObjectID = col_number(), 
@@ -20,31 +23,34 @@ Habitat_Data <- read_csv("data/raw/WestClear_Telemetry_Habitat_March.csv",
                                           `Instream Cover Percentage (3)` = col_number(), 
                                           `Date and Time` = col_date(format = "%m/%d/%Y"), 
                                           `Temperature (C)` = col_number()))
-#View(Habitat_Data)
+
 
 ## Remove % sign from Instream Cover Percentage columns 
-gsub( "%", "", as.character(Habitat_Data))
+gsub( "%", "", as.character(c('Instream Cover Percentage (1)',
+                              'Instream Cover Percentage (2)',
+                              'Instream Cover Percentage (3)')))
 view(Habitat_Data)
+  
 
-#Make Separate Data for Type 1 and Type 2 columns
-Fish_Cover1 <- Habitat_Data %>%
+## Make Separate Data for Type 1, Type 2, and Type 3 columns
+Instream_Cover1 <- Habitat_Data %>%
   filter(!is.na(`Tag Number`)) %>%
   select(c(`Tag Number`, 'Instream Cover Type (1)', `Instream Cover Percentage (1)`)) %>%
   rename(Cover_Type = 'Instream Cover Type (1)') %>%
   rename(Cover_Percentage = 'Instream Cover Percentage (1)')
-#Temporarily use -999 as no measurements 
-Fish_Cover1 <- Fish_Cover1 %>%
-  mutate(Cover_Percentage = if_else(is.na(Cover_Type), -999, Cover_Percentage)) %>%
-  mutate(Cover_Type = if_else(is.na(Cover_Type), "Missing", Cover_Type))
+  ## Temporarily use -999 as no measurements 
+      Instream_Cover1 <- Instream_Cover1 %>%
+        mutate(Cover_Percentage = if_else(is.na(Cover_Type), -999, Cover_Percentage)) %>%
+        mutate(Cover_Type = if_else(is.na(Cover_Type), "Missing", Cover_Type))
 
-Fish_Cover2 <- Habitat_Data %>%
+Instream_Cover2 <- Habitat_Data %>%
   filter(!is.na(`Tag Number`)) %>%
   select(c(`Tag Number`, 'Instream Cover Type (2)', `Instream Cover Percentage (2)`)) %>%
   rename(Cover_Type = 'Instream Cover Type (2)') %>%
   rename(Cover_Percentage = 'Instream Cover Percentage (2)') %>%
   filter(!is.na(Cover_Type))
 
-Fish_Cover3 <- Habitat_Data %>%
+Instream_Cover3 <- Habitat_Data %>%
   filter(!is.na(`Tag Number`)) %>%
   select(c(`Tag Number`, 'Instream Cover Type (3)', `Instream Cover Percentage (3)`)) %>%
   rename(Cover_Type = 'Instream Cover Type (3)') %>%
@@ -52,8 +58,8 @@ Fish_Cover3 <- Habitat_Data %>%
   filter(!is.na(Cover_Type))
 
 #Combine all Data Frames
-Cover_Long <- Fish_Cover1 %>%
-  bind_rows(Fish_Cover2, Fish_Cover3) %>%
+Cover_Long <- Instream_Cover1 %>%
+  bind_rows(Instream_Cover2, Instream_Cover3) %>%
   arrange(`Tag Number`)
 
 #Transform to wide format
@@ -104,7 +110,7 @@ head(Habitat_Data)
 # tibble::as_tibble(Habitat_Data)
 # 
 # 
-# 
+# Rename Tag to Tag Number
 # 
 # #Join Habitat_Data and Fish Data
 # left_join(Habitat_Data, Fish_Data, by = "Tag")
