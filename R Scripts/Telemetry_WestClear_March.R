@@ -34,39 +34,38 @@ view(Habitat_Data)
 
 ## Make Separate Data for Type 1, Type 2, and Type 3 columns
 Instream_Cover1 <- Habitat_Data %>%
-  filter(!is.na(`Tag Number`)) %>%
-  select(c(`Tag Number`, 'Instream Cover Type (1)', `Instream Cover Percentage (1)`)) %>%
+  select(c(`ObjectID`, 'Instream Cover Type (1)', `Instream Cover Percentage (1)`)) %>%
   rename(Cover_Type = 'Instream Cover Type (1)') %>%
-  rename(Cover_Percentage = 'Instream Cover Percentage (1)')
-  ## Temporarily use -999 as no measurements 
-      Instream_Cover1 <- Instream_Cover1 %>%
-        mutate(Cover_Percentage = if_else(is.na(Cover_Type), -999, Cover_Percentage)) %>%
-        mutate(Cover_Type = if_else(is.na(Cover_Type), "Missing", Cover_Type))
+  rename(Cover_Percentage = 'Instream Cover Percentage (1)') %>%
+  filter(!is.na(Cover_Type))
 
 Instream_Cover2 <- Habitat_Data %>%
-  filter(!is.na(`Tag Number`)) %>%
-  select(c(`Tag Number`, 'Instream Cover Type (2)', `Instream Cover Percentage (2)`)) %>%
+  select(c(`ObjectID`, 'Instream Cover Type (2)', `Instream Cover Percentage (2)`)) %>%
   rename(Cover_Type = 'Instream Cover Type (2)') %>%
   rename(Cover_Percentage = 'Instream Cover Percentage (2)') %>%
   filter(!is.na(Cover_Type))
 
 Instream_Cover3 <- Habitat_Data %>%
-  filter(!is.na(`Tag Number`)) %>%
-  select(c(`Tag Number`, 'Instream Cover Type (3)', `Instream Cover Percentage (3)`)) %>%
+  select(c(`ObjectID`, 'Instream Cover Type (3)', `Instream Cover Percentage (3)`)) %>%
   rename(Cover_Type = 'Instream Cover Type (3)') %>%
   rename(Cover_Percentage = 'Instream Cover Percentage (3)') %>%
   filter(!is.na(Cover_Type))
 
-#Combine all Data Frames
+## Combine all Data Frames
 Cover_Long <- Instream_Cover1 %>%
   bind_rows(Instream_Cover2, Instream_Cover3) %>%
-  arrange(`Tag Number`)
+  arrange(`ObjectID`)
 
 #Transform to wide format
 Cover_Wide <- Cover_Long %>%
-  pivot_wider(id_cols = `Tag Number`, 
+  pivot_wider(id_cols = `ObjectID`, 
               names_from = Cover_Type,
-              values_from = Cover_Percentage)
+              values_from = Cover_Percentage) %>%
+  replace_na(data(Substrate_Feature = 0, 
+                        Woody_Debris = 0, 
+                        Surface_Turbulance = 0,
+                        Aquatic_Vegetation = 0,
+                        Terrestrial_Vegetation = 0))
 
 
 
