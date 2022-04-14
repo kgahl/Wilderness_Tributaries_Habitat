@@ -56,43 +56,30 @@ Cover_Long <- Instream_Cover1 %>%
   bind_rows(Instream_Cover2, Instream_Cover3) %>%
   arrange(`ObjectID`)
 
-#Transform to wide format
+#Transform Cover_Long to wide format
 Cover_Wide <- Cover_Long %>%
   pivot_wider(id_cols = `ObjectID`, 
               names_from = Cover_Type,
-              values_from = Cover_Percentage) %>%
-  Cover_Wide[is.na(Cover_Wide)] <- 0
+              values_from = Cover_Percentage)
+
+## Replace NA with 0
+Cover_Wide[is.na(Cover_Wide)] <- 0
  
+view(Cover_Wide)
 
+## Delete instream cover columns from Habitat Data 
+Habitat_Data[10:15] <- list(NULL)
 
-
-
-
-
-
-
-## Unite Instream Cover and Percent for (1)(2)(3)
-#assign name <- unite(Habitat_Data, col = "Instream Cover 1", c("Instream Cover Type (1)", "Instream Cover Percentage (1)"), sep = "-")
-#unite(Habitat_Data, col = "Instream Cover 2", c("Instream Cover Type (2)", "Instream Cover Percentage (2)"), sep = "-")
-#unite(Habitat_Data, col = "Instream Cover 3", c("Instream Cover Type (3)", "Instream Cover Percentage (3)"), sep = "-")
-
-####unite(Habitat_Data, col = "Instream_Cover_1", (Instream Cover Type (1)|Instream Cover Percentage (1)), sep = "-")
-####print(Habitat_Data[,Instream_Cover_1,drop=FALSE])
+## Join Habitat Data and Cover Wide to create 
+Habitat_Data <- left_join(Habitat_Data, Cover_Wide, by = "ObjectID")
 
 view(Habitat_Data)
-head(Habitat_Data)
-  
-## Gather Instream Cover 1, 2, 3 to create a 1,2,3 and type/percent column
-# gather(Habitat_Data, "1, 2, 3", "Type Percent", column numbers to gather from- likely 10:12)
 
-## Remove column "1, 2, 3"
-# add '1, 2, 3' = col_skip() to Import Habitat Data
 
-## Separate Type Percent column into type and percent 
-# separate(Habitat_Data, col=Type Percent, into=c('Type', 'Percent'), sep='-')
 
-## Spread Type and Percent so Type observations become variables (columns) 
-# spread(Habitat_Data, key=Type, value=Percent)
+
+
+
 
 
 
