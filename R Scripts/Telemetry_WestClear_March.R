@@ -61,11 +61,8 @@ Cover_Wide <- Cover_Long %>%
   pivot_wider(id_cols = `ObjectID`, 
               names_from = Cover_Type,
               values_from = Cover_Percentage) %>%
-  replace_na(data(Substrate_Feature = 0, 
-                        Woody_Debris = 0, 
-                        Surface_Turbulance = 0,
-                        Aquatic_Vegetation = 0,
-                        Terrestrial_Vegetation = 0))
+  Cover_Wide[is.na(Cover_Wide)] <- 0
+ 
 
 
 
