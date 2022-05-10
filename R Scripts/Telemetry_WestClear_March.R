@@ -76,5 +76,15 @@ view(Habitat_Data)
 ### NEXT STEPS
 
 ## Import Radio Tagged Fish data and change "Tag" column name to "Tag Number" 
+Radio_Tagged_Fish <- read_csv("data/raw/Radio_Tagged_Fish.csv",
+                                na =c("","na"))
+
+Radio_Tagged_Fish <- Radio_Tagged_Fish %>%
+  rename('Tag Number' = 'Tag')
+                                 
+View(Radio_Tagged_Fish)
+
+# Combine 
+
 
 ## Join Radio Tagged Fish and Habitat Data 
