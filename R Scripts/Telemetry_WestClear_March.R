@@ -11,6 +11,9 @@ library(tidyr)
 ######################################################################################################################
 ###DATA WRANGLING 
 
+### Manipulate multiple data frames to combine and organize different aspects. End result will be 
+### one data frame with the necessary data to perform Habitat Suitability statistical analysis.  
+
 ## Import raw Habitat Data
 Habitat_Data <- read_csv("data/raw/WestClear_Telemetry_Habitat_March.csv", 
                          na =c("","na"),
@@ -71,6 +74,7 @@ Habitat_Data <- left_join(Habitat_Data, Cover_Wide, by = "ObjectID") %>%
   mutate(across('Substrate_Feature':'Terrestrial_Vegetation', ~replace_na(0))) 
 
 view(Habitat_Data)
+remove(Instream_Cover1, Instream_Cover2, Instream_Cover3, Cover_Long, Cover_Wide)
 
 #######################################################################################################################
 ### NEXT STEPS
@@ -84,9 +88,9 @@ Radio_Tagged_Fish <- Radio_Tagged_Fish %>%
                                  
 View(Radio_Tagged_Fish)
 
-# Combine 
-Habitat_And_Fish <- Radio_Tagged_Fish %>%
-  bind_rows(Habitat_Data) %>%
-  arrange(`Tag Number`)
-
 ## Join Radio Tagged Fish and Habitat Data 
+Habitat_And_Fish <- Habitat_Data %>%
+  merge(Radio_Tagged_Fish, Habitat_Data, by.x = 'Tag Number', by.y = 'Tag Number', all.x = TRUE)
+  
+
+
