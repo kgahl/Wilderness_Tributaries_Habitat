@@ -85,6 +85,8 @@ Radio_Tagged_Fish <- Radio_Tagged_Fish %>%
 View(Radio_Tagged_Fish)
 
 # Combine 
-
+Habitat_And_Fish <- Radio_Tagged_Fish %>%
+  bind_rows(Habitat_Data) %>%
+  arrange(`Tag Number`)
 
 ## Join Radio Tagged Fish and Habitat Data 
