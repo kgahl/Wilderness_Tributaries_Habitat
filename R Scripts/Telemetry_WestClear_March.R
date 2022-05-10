@@ -80,18 +80,17 @@ Radio_Tagged_Fish <- read_csv("data/raw/Radio_Tagged_Fish.csv",
                                 na =c("","na"))
 
 Radio_Tagged_Fish <- Radio_Tagged_Fish %>%
-  rename('Tag Number' = 'Tag')
+  rename('Tag_Number' = 'Tag')
                                  
 View(Radio_Tagged_Fish)
 
 ## Merge Radio Tagged Fish and Habitat Data 
 Fish_And_Habitat <- Habitat_Data %>%
-  merge(Radio_Tagged_Fish, Habitat_Data, by.x = 'Tag Number', by.y = 'Tag Number', 
+  merge(Radio_Tagged_Fish, Habitat_Data, by.x = 'Tag_Number', by.y = 'Tag_Number', 
         all.x = TRUE) %>%
-  rename('Site Type' == Site_Type)
+  rename('Site_Type' = 'Site Type')
 
-Fish_And_Habitat %>%
-  rename(Site_Type == 'Site Type')
+
   
 remove(Habitat_Data, Radio_Tagged_Fish)
 view(Fish_And_Habitat)
