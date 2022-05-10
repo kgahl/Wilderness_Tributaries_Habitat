@@ -69,7 +69,19 @@ Habitat_Data[10:15] <- list(NULL)
 
 ## Join Habitat Data and Cover Wide, Replace NA with 0 in cover columns 
 Habitat_Data <- left_join(Habitat_Data, Cover_Wide, by = "ObjectID") %>%
-  mutate(across('Substrate_Feature':'Terrestrial_Vegetation', ~replace_na(0))) 
+  mutate(across('Substrate_Feature':'Terrestrial_Vegetation', ~replace_na(0))) %>%
+  rename('Site_Type' = 'Site Type',
+         'Tag_Number' = 'Tag Number',
+         'Stream_Width_m' = 'Stream Width (m)',
+         'Depth_cm' = 'Depth (cm)',
+         'Velocity_m/s' = 'Velocity (m/s)',
+         'Canopy_Cover' = 'Canopy Cover',
+         'Stream_Name' = 'Stream Name',
+         'Date_Time' = 'Date and Time',
+         'Temperature_C' = 'Temperature (C)') 
+
+## Correct innacurate data in cell 67,2 (available to occupied)  
+Habitat_Data [67, 2] = 'Occupied'
 
 view(Habitat_Data)
 remove(Instream_Cover1, Instream_Cover2, Instream_Cover3, Cover_Long, Cover_Wide)
@@ -77,20 +89,18 @@ remove(Instream_Cover1, Instream_Cover2, Instream_Cover3, Cover_Long, Cover_Wide
 ### Add individual fish data from Radio Tagged Fish to Habitat Data data frame -establish species for each tag number
 ## Import Radio Tagged Fish data and change "Tag" column name to "Tag Number" 
 Radio_Tagged_Fish <- read_csv("data/raw/Radio_Tagged_Fish.csv",
-                                na =c("","na"))
-
-Radio_Tagged_Fish <- Radio_Tagged_Fish %>%
-  rename('Tag_Number' = 'Tag')
+                                na =c("","na")) %>%
+  rename('Tag_Number' = 'Tag',
+         'Capture_Method' = 'Capture Method',
+         'Capture_Date' = 'Capture Date')
                                  
 View(Radio_Tagged_Fish)
 
 ## Merge Radio Tagged Fish and Habitat Data 
 Fish_And_Habitat <- Habitat_Data %>%
   merge(Radio_Tagged_Fish, Habitat_Data, by.x = 'Tag_Number', by.y = 'Tag_Number', 
-        all.x = TRUE) %>%
-  rename('Site_Type' = 'Site Type')
-
-
+        all.x = TRUE)
+  
   
 remove(Habitat_Data, Radio_Tagged_Fish)
 view(Fish_And_Habitat)
@@ -104,13 +114,13 @@ view(Fish_And_Habitat)
 
 DS_Data <- Fish_And_Habitat %>% 
   filter(Species == 'Desert Sucker') %>% 
-  select('Species', 'Depth (cm)', 'Velocity (m/s)', 'Substrate', 'Canopy Cover', 'Mesohabitat', 'Site Type')
+  select('Species', 'Depth_cm', 'Velocity_m/s', 'Substrate', 'Canopy_Cover', 'Mesohabitat', 'Site_Type')
         # Need to combine habitat cover percentages to get one number then include Instream Cover in this select
 
 # Make a dataset of all available locations to be used in use v availability framework
 
 Available <- Fish_And_Habitat %>% 
-  filter('Site Type' == "Available") %>% 
-  select('Species', 'Depth (cm)', 'Velocity (m/s)', 'Substrate', 'Canopy Cover', 'Mesohabitat', 'Site Type')
+  filter(Site_Type == 'Available') %>% 
+  select('Species', 'Depth_cm', 'Velocity_m/s', 'Substrate', 'Canopy_Cover', 'Mesohabitat', 'Site_Type')
 
 
