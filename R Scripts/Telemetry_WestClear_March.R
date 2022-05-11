@@ -7,6 +7,7 @@ library(readr)
 library(tidyverse)
 library(dplyr)
 library(tidyr)
+library(glmmTMB)
 
 ######################################################################################################################
 ### DATA WRANGLING ##################################################################################################### 
@@ -56,7 +57,7 @@ Cover_Long <- Instream_Cover1 %>%
   bind_rows(Instream_Cover2, Instream_Cover3) %>%
   arrange(`ObjectID`)
 
-#Transform Cover_Long to wide format
+## Transform Cover_Long to wide format
 Cover_Wide <- Cover_Long %>%
   pivot_wider(id_cols = `ObjectID`, 
               names_from = Cover_Type,
@@ -101,26 +102,80 @@ Fish_And_Habitat <- Habitat_Data %>%
   merge(Radio_Tagged_Fish, Habitat_Data, by.x = 'Tag_Number', by.y = 'Tag_Number', 
         all.x = TRUE)
   
-  
 remove(Habitat_Data, Radio_Tagged_Fish)
 view(Fish_And_Habitat)
 
 #######################################################################################################################
 ### DESERT SUCKER#####################################################################################################
-### Create Use vs Availability Habitat Selection for Desert Sucker 
+### Prepare Use vs Availability Habitat Selection for Desert Sucker 
 
-# Isolate desert sucker observations from the data set with filter
-# select what variables(columns) from the data set to include
-
-DS_Data <- Fish_And_Habitat %>% 
+## Isolate desert sucker observations from the data set with filter. 
+##   Select what variables(columns) from the data set to include
+DS_Occupied <- Fish_And_Habitat %>% 
   filter(Species == 'Desert Sucker') %>% 
   select('Species', 'Depth_cm', 'Velocity_m/s', 'Substrate', 'Canopy_Cover', 'Mesohabitat', 'Site_Type')
         # Need to combine habitat cover percentages to get one number then include Instream Cover in this select
 
-# Make a dataset of all available locations to be used in use v availability framework
-
+## Make a data set of all available locations to be used in use v availability framework
 Available <- Fish_And_Habitat %>% 
   filter(Site_Type == 'Available') %>% 
   select('Species', 'Depth_cm', 'Velocity_m/s', 'Substrate', 'Canopy_Cover', 'Mesohabitat', 'Site_Type')
 
+## Combine Desert Sucker occupied and available to be used in 'use vs availability'
+DS_Data <- rbind(DS_Occupied, Available) %>%
+  
+## Trying to convert yes no to 1 0  
+#   DS_Data$
+# Canopy_Cover <- as.character(Canopy_Cover) 
+#                    
+#   
+# 
+# DS_Data$Canopy_Cover <- ifelse(DS_Data$Canopy_Cover == "Yes",1,0)
+#                                
+# levels('Canopy_Cover') <- c("0", "1")
+# 
+# DS_Data[DS_Data == "yes"] <- 1
+# DS_Data[DS_Data == "no"] <- 0                              
+# 
+# Canopy_Cover['Canopy_Cover' == "Yes"] <- 1
+# DS_Data['Canopy_Cover' == "No"] <- 0 
+# DS_Data <- as.numeric('Canopy_Cover')
 
+
+### Standardize the data
+## This makes the mean and standard deviation of each of the following variables 0 and 1 respectively which helps in 
+## the interpretation of the regressions. I don't know why....
+
+## Depth
+
+x <- mean(DS_Data$Depth_cm)
+DS_Data$Depth_std <- (DS_Data$Depth_cm - x) / sd(DS_Data$Depth_cm)
+sd(DS_Data$depth_std) #check to make sure SD is 1
+
+## Velocity
+
+y <- mean(DS_Data$'Velocity_m/s')
+DS_Data$Velocity_std <- (DS_Data$'Velocity_m/s' - y) / sd(DS_Data$'Velocity_m/s')
+sd(DS_Data$Velocity_std) #check to make sure SD is 1
+
+# ## Canopy Cover
+# 
+# z <- mean(DS_Data$Canopy_Cover)
+# DS_Data$Canopy_Cover_std <- (DS_Data$Canopy_Cover - z) / sd(DS_Data$Canopy_Cover)
+# sd(DS_Data$Canopy_Cover_std) #check to make sure SD is 1
+
+
+
+## Generalized linear regression: Logistic regression
+# Normal additive model
+RTC.Global<- glmer(Present ~ Depth_std + Velocity_std + Substrate + Canopy_Cover + Mesohabitat,
+                   family = "binomial",
+                   data = DS_Data, control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))
+
+summary(RTC.Global)
+
+plot(allEffects(RTC.Global)) # Plot of model (effects package required)
+
+r2(RTC.Global) # Conditional and marginal R2 (performance package required)
+#conditional = 0.563
+#Marginal = 0.525
