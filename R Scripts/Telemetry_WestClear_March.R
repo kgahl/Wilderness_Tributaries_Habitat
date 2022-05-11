@@ -7,7 +7,10 @@ library(readr)
 library(tidyverse)
 library(dplyr)
 library(tidyr)
+library(lme4)
+library(ggplot2)
 library(glmmTMB)
+
 
 ######################################################################################################################
 ### DATA WRANGLING ##################################################################################################### 
@@ -75,7 +78,7 @@ Habitat_Data <- left_join(Habitat_Data, Cover_Wide, by = "ObjectID") %>%
          'Tag_Number' = 'Tag Number',
          'Stream_Width_m' = 'Stream Width (m)',
          'Depth_cm' = 'Depth (cm)',
-         'Velocity_m/s' = 'Velocity (m/s)',
+         'Velocity' = 'Velocity (m/s)',
          'Canopy_Cover' = 'Canopy Cover',
          'Stream_Name' = 'Stream Name',
          'Date_Time' = 'Date and Time',
@@ -113,16 +116,18 @@ view(Fish_And_Habitat)
 ##   Select what variables(columns) from the data set to include
 DS_Occupied <- Fish_And_Habitat %>% 
   filter(Species == 'Desert Sucker') %>% 
-  select('Species', 'Depth_cm', 'Velocity_m/s', 'Substrate', 'Canopy_Cover', 'Mesohabitat', 'Site_Type')
+  select('Species', 'Depth_cm', 'Velocity', 'Substrate', 'Canopy_Cover', 'Mesohabitat', 'Site_Type')
         # Need to combine habitat cover percentages to get one number then include Instream Cover in this select
 
 ## Make a data set of all available locations to be used in use v availability framework
 Available <- Fish_And_Habitat %>% 
   filter(Site_Type == 'Available') %>% 
-  select('Species', 'Depth_cm', 'Velocity_m/s', 'Substrate', 'Canopy_Cover', 'Mesohabitat', 'Site_Type')
+  select('Species', 'Depth_cm', 'Velocity', 'Substrate', 'Canopy_Cover', 'Mesohabitat', 'Site_Type')
 
 ## Combine Desert Sucker occupied and available to be used in 'use vs availability'
-DS_Data <- rbind(DS_Occupied, Available) %>%
+DS_Data <- rbind(DS_Occupied, Available)
+
+remove(DS_Occupied, Available, Fish_And_Habitat)
   
 ## Trying to convert yes no to 1 0  
 #   DS_Data$
@@ -146,36 +151,38 @@ DS_Data <- rbind(DS_Occupied, Available) %>%
 ## This makes the mean and standard deviation of each of the following variables 0 and 1 respectively which helps in 
 ## the interpretation of the regressions. I don't know why....
 
-## Depth
+# ## Depth
+# x <- mean(DS_Data$Depth_cm)
+# DS_Data$Depth_std <- (DS_Data$Depth_cm - x) / sd(DS_Data$Depth_cm)
+# sd(DS_Data$depth_std) #check to make sure SD is 1
 
-x <- mean(DS_Data$Depth_cm)
-DS_Data$Depth_std <- (DS_Data$Depth_cm - x) / sd(DS_Data$Depth_cm)
-sd(DS_Data$depth_std) #check to make sure SD is 1
-
-## Velocity
-
-y <- mean(DS_Data$'Velocity_m/s')
-DS_Data$Velocity_std <- (DS_Data$'Velocity_m/s' - y) / sd(DS_Data$'Velocity_m/s')
-sd(DS_Data$Velocity_std) #check to make sure SD is 1
+# ## Velocity
+# y <- mean(DS_Data$'Velocity')
+# DS_Data$Velocity_std <- (DS_Data$'Velocity' - y) / sd(DS_Data$'Velocity')
+# sd(DS_Data$Velocity_std) #check to make sure SD is 1
 
 # ## Canopy Cover
-# 
 # z <- mean(DS_Data$Canopy_Cover)
 # DS_Data$Canopy_Cover_std <- (DS_Data$Canopy_Cover - z) / sd(DS_Data$Canopy_Cover)
 # sd(DS_Data$Canopy_Cover_std) #check to make sure SD is 1
 
-
+# remove(x, y)
 
 ## Generalized linear regression: Logistic regression
 # Normal additive model
-RTC.Global<- glmer(Present ~ Depth_std + Velocity_std + Substrate + Canopy_Cover + Mesohabitat,
-                   family = "binomial",
-                   data = DS_Data, control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))
-
-summary(RTC.Global)
-
-plot(allEffects(RTC.Global)) # Plot of model (effects package required)
-
-r2(RTC.Global) # Conditional and marginal R2 (performance package required)
-#conditional = 0.563
-#Marginal = 0.525
+# RTC.Global <- glmer(Site_Type ~ Depth_cm + Velocity + Substrate + Canopy_Cover + Mesohabitat,
+#                    family = "binomial",
+#                    data = DS_Data, control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))
+# 
+# # # RTC.Global<- glmer(Present ~ depth_std + Velo_std + Substrate + PercentCover_std + MacroHab, 
+# # family = "binomial",
+# # data = Roundtail.data, control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5)))
+# 
+# 
+# summary(RTC.Global)
+# 
+# plot(allEffects(RTC.Global)) # Plot of model (effects package required)
+# 
+# r2(RTC.Global) # Conditional and marginal R2 (performance package required)
+# #conditional = 0.563
+# #Marginal = 0.525
